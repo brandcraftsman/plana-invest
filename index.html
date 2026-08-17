@@ -3,7 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Due Diligence Answer Engine — Clickable Prototype</title>
+<title>Plans.aero — Investor Data Room</title>
+<!--
+  ============================================================================
+  INVESTOR PORTAL — plans.aero/invest (password-protected page on the company
+  website). This file is standalone and does NOT require dd-admin.html to
+  run — Chat / Search / Browse FAQ / My Questions all work against the local
+  seed data below.
+
+  It links to dd-admin.html (the PLANA due diligence admin, which lives
+  inside the knowledge-management system on a different host/app) in exactly
+  one place: the "Open in PLANA →" button inside the escalation email
+  preview. That link carries the unanswered question over as URL query
+  params (newq, qid, cat, askedBy) — see the "CROSS-FILE HANDOFF" comment
+  below the SEED_FAQ block for the full contract your backend should
+  eventually replace this with (a real API write + authenticated deep link),
+  rather than raw text in a URL.
+
+  This page also *receives* a handoff back: when PLANA notifies the investor
+  their question has been answered, the email's "View my answer" button
+  points here with ?answered=1&qid=…&q=…&a=…&cat=…&by=… — on load this file
+  reads those params, inserts the new Q&A, and scrolls/highlights it.
+  ============================================================================
+-->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -43,21 +65,12 @@ button{cursor:pointer;background:none;border:none}
 [hidden]{display:none !important}
 a{color:inherit}
 
-/* ============ Prototype meta bar (not part of either real screen) ============ */
-.proto-bar{position:sticky;top:0;z-index:200;display:flex;align-items:center;gap:14px;
-  padding:8px 18px;background:#000;border-bottom:1px solid var(--line-strong);flex-wrap:wrap}
-.proto-bar .pb-label{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:700}
-.proto-seg{display:flex;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden}
-.proto-seg button{padding:0 14px;min-height:30px;font-size:12.5px;color:var(--muted);border-right:1px solid var(--line)}
-.proto-seg button:last-child{border-right:none}
-.proto-seg button:hover{color:var(--text);background:var(--raised)}
-.proto-seg button[aria-pressed="true"]{background:#fff;color:#000;font-weight:700}
-.proto-note{font-size:12px;color:var(--faint);margin-left:4px}
-.proto-reset{margin-left:auto;font-size:12px;color:var(--brand-orange);border:1px solid var(--line-strong);
-  border-radius:7px;padding:5px 11px}
-.proto-reset:hover{background:var(--raised)}
-.proto-badge{background:linear-gradient(120deg,var(--brand-red),var(--brand-orange) 140%);color:#fff;
-  font-size:10.5px;font-weight:700;border-radius:5px;padding:2px 7px;letter-spacing:.03em}
+/* ============ Dev bar (remove before shipping — orientation only) ============ */
+.dev-bar{position:sticky;top:0;z-index:200;display:flex;align-items:center;gap:10px;
+  padding:7px 18px;background:#000;border-bottom:1px solid var(--line-strong);flex-wrap:wrap;font-size:12px}
+.dev-bar b{color:var(--brand-orange)}
+.dev-bar a{color:var(--muted);text-decoration:underline;margin-left:auto}
+.dev-bar a:hover{color:var(--text)}
 
 /* ============ Shared components ============ */
 .btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-strong);
@@ -65,36 +78,26 @@ a{color:inherit}
 .btn:hover{background:var(--raised)}
 .btn-primary{background:linear-gradient(180deg,#fff,#e9e9ec);color:#000;border-color:#fff;font-weight:600}
 .btn-primary:hover{background:#e8e8e8}
-.btn-primary:disabled{opacity:.45;cursor:not-allowed}
 .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;
   border-radius:6px;padding:3px 9px;min-height:24px;letter-spacing:.02em}
 .chip.outline{border:1px solid var(--line-strong);color:var(--muted);font-weight:600}
 .chip.dashed{border:1px dashed var(--line-strong);color:var(--muted);font-weight:600}
 .chip.approved{background:#fff;color:#000}
 .chip.new{background:linear-gradient(120deg,var(--brand-red),var(--brand-orange) 140%);color:#fff}
-.card{background:linear-gradient(180deg,#1e1e21 0%,var(--surface) 55%,#18181a 100%);
-  border:1px dashed var(--line-strong);border-radius:10px;
-  padding:16px 18px;margin-bottom:16px;position:relative}
-.card.official{border-style:solid;border-color:var(--brand-orange);box-shadow:0 0 0 1px rgba(229,98,3,.25)}
-.card.reviewed{opacity:.5}
 .empty{border:1px dashed var(--line-strong);border-radius:10px;padding:40px;text-align:center;color:var(--muted)}
 .seg{display:flex;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden;width:fit-content}
 .seg button{padding:0 14px;min-height:34px;font-size:13px;color:var(--muted);border-right:1px solid var(--line)}
 .seg button:last-child{border-right:none}
 .seg button:hover{color:var(--text);background:var(--raised)}
 .seg button[aria-pressed="true"]{background:#fff;color:#000;font-weight:700}
-@keyframes spin{to{transform:rotate(360deg)}}
-.spinner{width:14px;height:14px;border-radius:50%;border:2px solid var(--line-strong);
-  border-top-color:var(--brand-orange);animation:spin .7s linear infinite;flex-shrink:0}
-@keyframes winIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
-.win-in{animation:winIn .3s ease both}
 @keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:300;
   background:linear-gradient(180deg,#1e1e21,#141416);border:1px solid var(--brand-orange);
   border-radius:10px;padding:11px 18px;font-size:13px;display:flex;align-items:center;gap:8px;
   box-shadow:0 12px 40px rgba(0,0,0,.5);animation:toastIn .25s ease both}
 .toast .tdot{width:7px;height:7px;border-radius:50%;background:var(--brand-orange);flex-shrink:0}
-.toast-link{color:var(--brand-orange);text-decoration:underline;font:inherit;white-space:nowrap;padding:0}
+@keyframes winIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.win-in{animation:winIn .3s ease both}
 ::-webkit-scrollbar{width:9px;height:9px}
 ::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:5px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -118,9 +121,9 @@ a{color:inherit}
 .email-body p{margin-bottom:12px}
 .email-cta{display:inline-block;margin-top:6px}
 
-/* light-mode transactional email — the investor-facing "answered" notification.
-   Deliberately light (not the dark app theme): renders reliably across every
-   email client and matches conventional inbox expectations. */
+/* light-mode transactional email preview — the investor-facing "answered"
+   notification. Deliberately light (not the dark app theme): renders
+   reliably across every email client and matches inbox expectations. */
 .email-light{background:#f4f4f5;border-radius:10px;overflow:hidden;font-family:"Google Sans","Google Sans Text",-apple-system,sans-serif}
 .el-head{background:#0f0f10;padding:16px 22px}
 .el-logo{color:#fff;font-weight:800;font-size:15px;letter-spacing:.02em}
@@ -134,31 +137,9 @@ a{color:inherit}
   font-weight:700;font-size:13.5px;padding:11px 22px;border-radius:8px;text-decoration:none;margin-bottom:18px}
 .el-foot{font-size:12px;color:#7c7b80;margin-bottom:0}
 
-/* Add Q&A modal */
-#addQaOvl{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(560px,94vw);
-  max-height:88vh;display:none;flex-direction:column;z-index:187;
-  background:linear-gradient(180deg,#1e1e21 0%,var(--surface) 30%,#161618 100%);
-  border:1px solid var(--line-strong);border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,.65);overflow:hidden}
-#addQaOvl.show{display:flex}
-.aq-field{margin-bottom:14px}
-.aq-field label{display:block;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);
-  font-weight:700;margin-bottom:6px}
-.aq-field input,.aq-field select{width:100%;min-height:38px;background:var(--raised);border:1px solid var(--line-strong);
-  border-radius:8px;padding:0 12px;font-size:13.5px;color:var(--text)}
-.aq-field input::placeholder{color:var(--muted)}
-.aq-field textarea{width:100%;min-height:96px;background:var(--raised);border:1px solid var(--line-strong);
-  border-radius:8px;padding:10px 12px;font-size:13.5px;color:var(--text);resize:vertical;line-height:1.6}
-.aq-field textarea::placeholder{color:var(--muted)}
-.aq-row2{display:flex;gap:12px}
-.aq-error{color:var(--brand-red);font-size:12.5px;margin:-4px 0 12px}
-.aq-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
-
-/* ================================================================
-   INVESTOR PORTAL  (plans.aero/invest — password-protected page)
-   ================================================================ */
-#investorView{min-height:100vh}
+/* ============ Investor top bar ============ */
 .inv-top{display:flex;align-items:center;gap:14px;padding:14px 28px;border-bottom:1px solid var(--line);
-  background:var(--bg);position:sticky;top:37px;z-index:40}
+  background:var(--bg);position:sticky;top:33px;z-index:40}
 .inv-top img{height:26px;width:auto}
 .inv-top .sep{width:1px;height:20px;background:var(--line-strong)}
 .inv-top h1{font-size:14.5px;font-weight:700}
@@ -210,7 +191,6 @@ a{color:inherit}
 .inv-hero{margin-bottom:20px}
 .inv-hero h2{font-size:21px;font-weight:800;letter-spacing:-.01em;margin-bottom:6px}
 .inv-hero p{font-size:13.5px;color:var(--muted);max-width:64ch}
-
 .inv-tabs{margin-bottom:18px}
 
 /* ---- Chat ---- */
@@ -270,242 +250,90 @@ a{color:inherit}
 .faq-item.open .faq-a{display:block}
 .faq-meta{display:flex;gap:7px;align-items:center;margin-top:9px;flex-wrap:wrap}
 .faq-more{text-align:center;padding:18px;color:var(--faint);font-size:12.5px;border-top:1px dashed var(--line);margin-top:6px}
-
-/* ================================================================
-   PLANA — Due Diligence admin (internal app shell)
-   ================================================================ */
-#planaView{display:grid;grid-template-columns:236px 1fr;min-height:calc(100vh - 37px)}
-.sidebar{border-right:1px solid var(--line);
-  background:linear-gradient(180deg,#1d1d20 0%,var(--surface) 30%,#161618 100%);
-  display:flex;flex-direction:column}
-.ws{padding:18px 16px 14px;border-bottom:1px solid var(--line)}
-.ws img{display:block;height:28px;width:auto;margin-left:-4px}
-.ws-sub{font-size:12px;color:var(--muted);margin-top:6px;letter-spacing:.03em}
-.side-scroll{flex:1;overflow-y:auto;padding:12px 10px}
-.side-label{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);
-  font-weight:700;padding:10px 8px 6px}
-.side-item{display:flex;align-items:center;gap:9px;width:100%;text-align:left;
-  padding:8px 10px;min-height:36px;border-radius:7px;font-size:13.5px;color:var(--text)}
-.side-item:hover{background:var(--raised)}
-.side-item.active{background:var(--raised);font-weight:600;box-shadow:inset 3px 0 0 var(--brand-orange)}
-.side-item .ico{width:16px;text-align:center;color:var(--muted)}
-.side-item .cnt{margin-left:auto;font-size:11px;font-weight:700;background:var(--brand-orange);color:#fff;
-  border-radius:99px;padding:1px 7px;min-width:18px;text-align:center}
-.side-item.disabled,.side-item.disabled:hover{background:none;color:var(--faint);cursor:not-allowed;opacity:.55}
-.side-item.ext{text-decoration:none}
-.side-item .ext-mark{margin-left:auto;font-size:11px;color:var(--faint)}
-.side-foot{border-top:1px solid var(--line);padding:12px}
-.user{display:flex;gap:10px;align-items:center;width:100%;text-align:left;padding:6px;border-radius:8px}
-.user:hover{background:var(--raised)}
-.avatar{width:32px;height:32px;border-radius:50%;background:var(--brand-gray);color:#fff;
-  display:grid;place-items:center;font-size:12px;font-weight:700}
-.user b{font-size:13px;display:block}
-.user span{font-size:12px;color:var(--muted)}
-
-.main{min-width:0}
-.topbar{display:flex;align-items:center;gap:14px;padding:12px 26px;border-bottom:1px solid var(--line);
-  background:var(--bg);position:sticky;top:37px;z-index:39}
-.crumbs{font-size:12.5px;color:var(--muted)}
-.crumbs b{color:var(--text);font-weight:600}
-.dd-page{max-width:1080px;margin:0 auto;padding:22px 26px 70px}
-.dd-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
-.dd-head h1{font-size:20px;font-weight:800}
-.dd-head p{font-size:12.5px;color:var(--muted);margin-top:4px}
-
-.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
-.stat{background:linear-gradient(180deg,#1e1e21,#18181a);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
-.stat .n{font-size:24px;font-weight:800}
-.stat .l{font-size:11.5px;color:var(--muted);margin-top:2px;letter-spacing:.02em}
-
-.dd-tabs{margin-bottom:18px}
-
-/* pending question card */
-.pq-top{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
-.pq-top h4{font-size:15.5px;font-weight:700;flex:1;line-height:1.4}
-.pq-meta{font-size:12px;color:var(--muted);margin-top:4px}
-.pq-meta b{color:var(--text);font-weight:600}
-.pq-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
-.pq-answer{margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
-.pq-answer textarea{width:100%;min-height:84px;background:var(--raised);border:1px solid var(--line-strong);
-  border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);resize:vertical;line-height:1.6}
-.pq-answer textarea::placeholder{color:var(--muted)}
-.pq-row2{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
-.pq-row2 select{background:var(--surface);border:1px solid var(--line-strong);border-radius:7px;
-  padding:0 10px;min-height:32px;font-size:12.5px;color:var(--text)}
-.pq-status{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--brand-orange)}
-.pq-status.done{color:#7bd88f}
-
-/* library item */
-.lib-item{border-bottom:1px solid var(--line);padding:13px 2px;display:flex;gap:12px;align-items:flex-start}
-.lib-item:last-child{border-bottom:none}
-.lib-item .li-body{flex:1}
-.lib-item h4{font-size:13.5px;font-weight:600}
-.lib-item p{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.6}
-.lib-meta{display:flex;gap:7px;align-items:center;margin-top:8px;flex-wrap:wrap}
 </style>
 </head>
 <body>
 
-<!-- ============ PROTOTYPE-ONLY META BAR ============ -->
-<div class="proto-bar">
-  <span class="pb-label">Prototype</span>
-  <span class="proto-badge">Due Diligence Answer Engine</span>
-  <div class="proto-seg" role="tablist">
-    <button id="btnViewInvestor" aria-pressed="true" onclick="setView('investor')">① Investor Portal — plans.aero/invest</button>
-    <button id="btnViewPlana" aria-pressed="false" onclick="setView('plana')">④ PLANA — Due Diligence Admin</button>
-  </div>
-  <span class="proto-note" id="protoNote">Ask a question the library doesn't cover, then switch views to answer it as Duc/Braden and watch it come back.</span>
-  <button class="proto-reset" onclick="resetDemo()">↺ Reset demo</button>
+<!-- Dev bar — orientation for whoever is testing the prototype. Delete this div when shipping. -->
+<div class="dev-bar">
+  <span>📄 <b>index.html</b> — investor portal (public site)</span>
+  <a href="dd-admin.html" target="_blank">Open dd-admin.html (PLANA) →</a>
 </div>
 
-<!-- ============================================================ -->
-<!-- VIEW 1 — INVESTOR PORTAL (plans.aero/invest)                  -->
-<!-- ============================================================ -->
-<div id="investorView">
-  <div class="inv-top">
-    <img src="data:image/png;base64,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" alt="PLANA">
-    <div class="sep"></div>
+<div class="inv-top">
+  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAACOCAYAAADHGPqZAAAACXBIWXMAAAc3AAAHNwGj9amOAAAQOUlEQVR4nO3d7XnbthrG8Tvn6ne7E1idIO4EYSeoO4HZCaIzQeAJjjpB6AnqTFBlgjoTVJ6g9gQ+HxBWqiI8fBFJEOD/d12++kLLgi2SNwHwAd+8vr4KAACk7T+xGwAAAM5HoAMAkAECHQCADBDoAABkgEAHACADBDoAABkg0AEAyACBDgBABgh0AAAyQKADAJABAh0AgAwQ6AAAZIBABwAgAwQ6AAAZINABAMgAgQ4AQAYIdAAAMkCgAwCQAQIdAIAMEOgAAGSAQAcAIAMEOgAAGSDQAQDIAIEOAEAGCHQAADJAoAMAkAECHQCADBDoAABkgEAHACADBDoAABlYeqCvJL0efLmYjQEAoC8CHQCADCw90I9dx24AAAB9LD3Qi6P/vozRCAAAzrX0QD+2it0AAAD6WHqgHw+xX0VpBQAAZ1p6oJ8aYmfYHQCQHAL9W9wYBwBIztID/W3sBgAAMISlB/op9NABAMlZcqAXgf/PHDoAIDlLDvSQVewGAADQ1ZIDPTS0vpqyEQAADGHJgc7QOgAgGwT6t95N2goAAAaw5EDnbvZvbfXvx8nO+etR0oP8I2/H+CwL473R3VrNn2kVq3GGQmm2+xSn0+3fxmuSyan5b+8itW2WlhzoFsJ+/t5K+lnSB0l/StrJhwZTKfNzqXYn3luleezdimAZ2kr+2G6yFvc9/WPJgW4NrRMK6bmS9D/5YL+J2xQccZIuWn7vZsR2jOmDpDJ2IzLiWn7fRYfvzd6SA92yit0A9HYh6XelMwyau5Wk9x2+/53Ca0TM3UcR6kMo5Ec92kp1ZGdwMQP9Ur435TR9gDa9X9P2MZSidzmkWxHqc9Cnx10N3YgJEerncz1ek+rIzqC+i/jeTn6Y9MPXr3v5D+VxgvdeTfAebVzKzwGttR+S3MjfpPIcqU2nPMlfbMR2rfZDt9L+Kr8cvilooZC/z+GUF/l9/NQji6/kP7NqjEZN4KP87/YQuyEJKhWeDn35+s9T54B38p2hRf/NYwX6St8Ow91+/fosfyBXI75/0xx5MeJ7S/73dzo9rHQlH/Bu5DZ0UWle7bmW/4xu1FxmeCt/kC/6QI/EGdvqC9c/jO0PmteF7bEnnb4gkfwxU2iaDkpOnLFt/fWfHwPb631msWINuT9L+hTY9k7+A9tpvLuWY823FPInsb8UniN60sJ3yhYe5Q/eQtIP8heBFobjplcqfLH1pH2gh84DF9qfwOfqRvte47EL+d+Pud32nMIXSE/ad/RCx3vdGVqsmIF+I+m/xvcc3rW80bTD5EMfhKX87/GH7B7lp6/vzVV9ezv5YL83vqcewsU0msrUnPY9b+sEPPeSpEf5fY9QP189/RhSHvy7M77PacFVSrHvct9I+lHSF+N7LuSH5//SfhjrXE0/o8s8bUh9UnuWH3EIXXlK/oTwq/xFzpyHGOeslB3qi75yn9ha4f39i/49nbaT9Fvge1MoSWob6qtpmpMsp/B597P+vfjNVmmP7IwmdqBL+wPCOhnXbuV7uVuN3+Pqe5W3kj9h/S1/s1/TxcEX+d+/6vl+2FsrfGJ9K06qU2jqaZ3a5hT+3G41/zK2NqH+oAX3HBusZJc2ntpnrH3sgxZ6rM8h0CXfKy0l/aLwQXHo3Hn2VYvv6TpMVqh5fvzYb+LGmSE9y54vLyZqx5Jt1L6nVWv63Nx5TZrEo+yQeSv/uxPq36qMbfc6fX7cKTyyI6WxzwxuLoFee5APUmsI/lDfeXZr+LuLS7WfHz/0In/xshZD7EOzbihkLnNc17IvZktjm5O/8emUuiRp7ir5qbMQQv1bhewyNesiySntkZ3BzS3QJR+O15LuOrymyzx724PJ+hkr+Z1pp+b58WOf5X8/7mQfhzXaQaCPy+pl/6bmtQxcz589J5XahTo863PdyO7w5DCyM6g5BnrNSfpJ7YbgDzXNs59zUr+WP2D/Urv58WN38hcKuzPagGZtR3gwnEJ2T8u1+BmV8ihJqtQc6tUkLZm3Uv5vcUpd2tjEyR7ZKbs2KmVzDnRpf3do6I5Gy7nz7IfBf/O1LX+q2xrDtSf5ixPX47XojmmM6VXGtqae1iHXsC2V4epK9o2+S1+a+FLNveu2+0zTsPxizD3QpXY165bjefa2c3Er7efHf1f7+fFjdW35tufrgbkrZS8I4jr8rK3yKUkqRaiHrBUe4TwubWzyIHtkx3X4WUlLIdBrbWrWLfU8e9snP71V9/nxQy/yFyHUlk+v78UXumvT0+oqp5KkUs2hnsr9AUNZqXtpYxPX8PNSGdk5S0qBLnWrWY+pri1f2oE6Bytj226iNiyJ1dOqn8vQ1U52SVJqx1Up+5z1Xsua63UK7zOf1G80c6vw3ziFBYoGkVqgS91r1qdGbXlc1pTKbqpGLMRKvscc4s742U7h4/tnpVeSVMoeXVzKY1ebShvPmVJxxrb3Smtkp5cUA73WtWZ9bNSWz4N1QthO1YiFcMa2vj2tWo4lSYUI9XNLGy072eXOqY3sdJZyoEv7mnVreG4K1JbPg7WG+IsI9CEVGq+nVXPKqyTpWcsO9RudX9rYZKO8RnY6ST3Qa2v1q1kfArXl81DKVzOEVNM0YzGcse1Owx0P1vtY2+aqTahvlOciSOcsItPWs/LbZ1rLJdClfc1607Oxh0Jt+Xw4+Z5NyIsWMNw2oVJ2T2vIv3Wl/EqS6lBf0mNXrdGzrqWNTTbKa2SntZwCXdofKH1r1tuitjy+a/mTxE72jVmSP8B3I7dnSVzDtqHvIbHeL9WSpCWF+qWaP8OhNS02k+I+0+i72A0YyUb+YNhqmGebH7pTmr2Cc5Sa19xTlzrzz1re5zUmJ7unNcZIyFa+JOnUnH1dkpTSgjO1ugx3q9PnqTrUC6VdNeNklzaOce9RvdjMqXNFvYywG+F9o3rz+voauw1jqBe76LNMa5Mv8gGX8gEWslVei7LU6wH06TEW8s8EOOVNz/ak7lJ+pCN0cv5F490YupJ/hkLIDxpnFKbQ+PtBPdpnrZxW6PyRD6fTo1mfNd4F+0r25/aTxhvpLBT+7F7k25ZVRVJuQ+7S/uAYI8yl/dOSUuwRLMknDXMSxJ7T9D2t2k75liQ9yl4/IeXHrlqfy73Gnbbcyl5sJuV95qTcAn0t/wCV0BN8hnIhf0f1g9I8yHL2Iv+kK5bcHdZK9rLJU1zg5lyStFV+z1Iv5D+XEDdBG6z3uFVmi83kEuiX8uFqlS2N4Wft58EQ15P8zZArUaI2hsrYdq9ppqCaSpJS73FVyivUnbFtyNJGy072yE41QRsmk0OgF/IfmnUlOKYr+XkaF+n9l+pJflj9Tv6hPSsNV8uKfys0/oIgbVklSW+VfklSpeZQT+HCpdR0pY1NrJGdd8qoQ5b6Xe5OzSVLU/kgv2OUyq9E6l7zuZJ9FKE9taYFQXYTtaO2ln+k8SlOfrQu5X2kku+Fh0Yc6/uDyika00ObMrUpP596ZCf098xmIZ9UA30lf9COPVfe1Tv5wCmV1zKwO1Fzv1SlwsdZrAV7llCSVIdM6ObeOYd60yIy1XRN+cdG4XbVIzvVhO0ZRYpD7jfyoTm3MK9dyPceUhgWAyx1+WfIhaS/Jb1G+LLKK1NdbOZYqeZnqVeTtKS9S9k3SF4pzv7yqvBFhpTJYjMpBXp9cvld5y0WE5p/O/ai89aGfy9/4ZHFUA4Waa3hF2aaQk4lSaWaQ72cpCXtbJTmPlOP7CQtlUCva8utshnLi/wT2X5Q+6G4R/mh/V/V/iLgWH1Xatnz9UAsK6V9gsupJKmUHepzeUKbNUWQgrUS32dSCPS1fCj2GWI/LGWq1/3etXxtffNV9fX1v6jfg18u5A84ataREqc0e1qHqtgNGNBa83/sauqjIvUywsmac6Af1pZ3PbF8lu9Zr/RtKVPbuyuPv+9B/i72H2VfLYfUNesMwWPuUu9p1XIqSaof5jLXUC+Ux7LRt0r4HD3XQC/kw69rbfm9/NrAhcJX520XwNgZry/lh+/v1G2e/Up+JTvX4TXA1FLvaR3K6XdpG+oxAqmK8J5jSXafmWOgO/mFWqw7Eg8dzo+XGq68atdiu1O/efYPSmvFJyzHjewFQb6XfyjJ3L5yXmzmUJtQ32raUC9ll6nF3jdOfX2vDBebmVOgr+R3xLYLxZyaH2+rz1x4SN959nfybbYeygBMzeqdOM13wRbrBr6N8rp4fpYP0Tk8S72ptHGuN1Y+y25bNVE7BjWXQK9ry9vMwVjz40Pa9nhN13l2atYxJ00Lgsx5P60XmznlQvMNlr7qZ0jEDnWrtPGz5r3AVqXwyM6VEhzZiR3oXWrL28yPt7U78/VNus6zU7OO2JqW6yynacZZrNBOviTphDahPmZ1zUr2iKob6X2HVBrbkhvZiRnobWrLY82PW/NTXd/Hqd08OzXriMnJ7mltJ2tJf4+yn3/tpmvKZJpC/Urj3a/jjG33SmOf2SqjkZ1YgV6Heai2/Jz58TaahumHHsY/nGf/SfYO9FF5nngwXyvFf9b5UJzC4ZZ0SZKhHhEMGeOxq4Xs0kY34HuNzdq/PyihkZ1YgV4v2nJsqvnxptK13UjvK/kDq5AfdQj1JrYjvj9wzJobv9c0zzofyk7NT4fL0YOaH7vad6XNU5yx7U5pPXHSGtmREro4iTnkfnhVNOT8+BB2E71HKV8+cTjP/kkE+tzFerhE36/C+F0Khdd7mPpZ50PZKMOSpBYq2aE+lFLzedb5UNayR3aK6ZrSX8xAf5AfVh96fryNOfU4nrV/0s+vSmt4E+lzxraN0upp1bIsSWqp0vih7oxta823tNHyrOaSzdmLfZd7rBNG0w63naIRJ1RK8wSKNJXKr6dVq2SXJOV84VzJj/qNwWl+zzofykbhfeadElgzJHagx2TdcQ7krqlMLdWe1qHS2OaUWElSR079njlhuZR9IVQO/H5Tq0dLQ2Z/gbvkQN8Z2+Y0JA+MwVpE5ovS7mnVtsqoJKmHUsOG+kbplzY2qRQuW579yM53sRsQkdX7SL1n0lfoQmY3ZSNm4lnDLhEc06n9+Vrh38+N15TJlQpfnBQtXp/6flDK/w5WuV7bDsxK4b/FrIOuo7XCx0ChGffU37y+vsZuQyxOp1c5elHeQ3EAgAwtecg9hOF2AEBylhzoBDcAIBtLDvTQPPl2ykYAADCEJQf6LnYDAAAYCoHe/v8DADBbSw70kF3sBgAA0NXSA/1UTeVSa9ABAAlbeqCfwt3vAIDkLD3QCW8AQBaWHujHw+spL/EIAFiwpQf6LnYDAAAYAoFu/zcAAElYeqAf28VuAAAAfSz58amSX+b17ui/AQBIzpIfnwoAQDYYcgcAIAMEOgAAGSDQAQDIAIEOAEAGCHQAADJAoAMAkAECHQCADBDoAABkgEAHACADBDoAABkg0AEAyACBDgBABgh0AAAyQKADAJABAh0AgAwQ6AAAZIBABwAgAwQ6AAAZINABAMgAgQ4AQAYIdAAAMkCgAwCQAQIdAIAMEOgAAGSAQAcAIAMEOgAAGSDQAQDIAIEOAEAG/g/8Du1YmOCDYAAAAABJRU5ErkJggg==" alt="PLANA">
+  <div class="sep"></div>
+  <div>
+    <h1>Plans.aero — Investor Data Room</h1>
+    <div class="sub">Due diligence Q&amp;A, powered by PLANA</div>
+  </div>
+  <div class="inv-user">
+    <span class="inv-lock">🔒 Password-protected</span>
+    <div class="bell-wrap">
+      <button class="bell-btn" onclick="toggleBell()" id="bellBtn">🔔<span class="bell-badge" id="bellBadge" hidden>0</span></button>
+      <div class="bell-dd" id="bellDd">
+        <div class="bell-dd-head">Answered since your last visit</div>
+        <div class="bell-dd-list" id="bellDdList"></div>
+      </div>
+    </div>
+    <div class="inv-avatar">PH</div>
     <div>
-      <h1>Plans.aero — Investor Data Room</h1>
-      <div class="sub">Due diligence Q&amp;A, powered by PLANA</div>
-    </div>
-    <div class="inv-user">
-      <span class="inv-lock">🔒 Password-protected</span>
-      <div class="bell-wrap">
-        <button class="bell-btn" onclick="toggleBell()" id="bellBtn">🔔<span class="bell-badge" id="bellBadge" hidden>0</span></button>
-        <div class="bell-dd" id="bellDd">
-          <div class="bell-dd-head">Answered since your last visit</div>
-          <div class="bell-dd-list" id="bellDdList"></div>
-        </div>
-      </div>
-      <div class="inv-avatar">PH</div>
-      <div>
-        <b>Philippe</b>
-        <span>Fundraising lead</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="inv-wrap">
-    <div class="inv-hero">
-      <h2>Ask anything about the raise</h2>
-      <p>Chat, search, or browse the full FAQ library below. Every answer is sourced from our verified data room, economic model, and budgets — anything we haven't documented yet gets routed straight to Duc and Braden and posted here as soon as it's answered.</p>
-    </div>
-
-    <div class="seg inv-tabs" role="tablist">
-      <button aria-pressed="true" onclick="setInvTab('chat')" id="invTabChat">💬 Chat</button>
-      <button aria-pressed="false" onclick="setInvTab('search')" id="invTabSearch">🔍 Search</button>
-      <button aria-pressed="false" onclick="setInvTab('faq')" id="invTabFaq">📋 Browse FAQ</button>
-      <button aria-pressed="false" onclick="setInvTab('mine')" id="invTabMine">🕐 My Questions</button>
-    </div>
-
-    <!-- CHAT -->
-    <div id="invChatPane">
-      <div class="chat-window" id="chatWindow"></div>
-      <div class="chat-input">
-        <input id="chatInput" type="text" placeholder="Ask a question about the raise…" onkeydown="if(event.key==='Enter')sendChat()">
-        <button onclick="sendChat()">Send →</button>
-      </div>
-      <div class="chat-suggest">
-        <button onclick="sendChat('What is your current cash runway?')">What is your current cash runway?</button>
-        <button onclick="sendChat('What is your customer acquisition strategy?')">What is your customer acquisition strategy?</button>
-        <button onclick="sendChat('What is the liquidation preference on this round?')">What is the liquidation preference on this round?</button>
-      </div>
-    </div>
-
-    <!-- SEARCH -->
-    <div id="invSearchPane" hidden>
-      <div class="search-box">
-        <input id="searchInput" type="text" placeholder="Search the Q&A library…" oninput="renderSearch()">
-      </div>
-      <div class="search-count" id="searchCount"></div>
-      <div id="searchResults"></div>
-    </div>
-
-    <!-- FAQ -->
-    <div id="invFaqPane" hidden>
-      <div class="faq-cats" id="faqCats"></div>
-      <div id="faqList"></div>
-      <div class="faq-more">97 more answers live in the full library — this prototype shows a representative sample. Placeholder content shown throughout; swap in real Q&amp;A once supplied.</div>
-    </div>
-
-    <!-- MY QUESTIONS -->
-    <div id="invMinePane" hidden>
-      <div id="mineList"></div>
+      <b>Philippe</b>
+      <span>Fundraising lead</span>
     </div>
   </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- VIEW 2 — PLANA (internal app shell) — Due Diligence admin     -->
-<!-- ============================================================ -->
-<div id="planaView" hidden>
-  <div class="sidebar">
-    <div class="ws">
-      <img src="data:image/png;base64,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" alt="PLANA">
-      <div class="ws-sub">Company Brain · Project 1 (Beta)</div>
-    </div>
-    <div class="side-scroll">
-      <div class="side-label">Dashboard views</div>
-      <button class="side-item disabled"><span class="ico">⚡</span>Me</button>
-      <button class="side-item disabled"><span class="ico">⇄</span>Work Package</button>
-      <button class="side-item disabled"><span class="ico">▣</span>The Business</button>
+<div class="inv-wrap">
+  <div class="inv-hero">
+    <h2>Ask anything about the raise</h2>
+    <p>Chat, search, or browse the full FAQ library below. Every answer is sourced from our verified data room, economic model, and budgets — anything we haven't documented yet gets routed straight to Duc and Braden and posted here as soon as it's answered.</p>
+  </div>
 
-      <div class="side-label">Launchpad</div>
-      <a class="side-item ext disabled"><span class="ico">◧</span>Jira<span class="ext-mark">↗</span></a>
-      <a class="side-item ext disabled"><span class="ico">◧</span>Smartsheet<span class="ext-mark">↗</span></a>
-      <a class="side-item ext disabled"><span class="ico">✉</span>Gmail<span class="ext-mark">↗</span></a>
-      <a class="side-item ext disabled"><span class="ico">▤</span>Drive<span class="ext-mark">↗</span></a>
+  <div class="seg inv-tabs" role="tablist">
+    <button aria-pressed="true" onclick="setInvTab('chat')" id="invTabChat">💬 Chat</button>
+    <button aria-pressed="false" onclick="setInvTab('search')" id="invTabSearch">🔍 Search</button>
+    <button aria-pressed="false" onclick="setInvTab('faq')" id="invTabFaq">📋 Browse FAQ</button>
+    <button aria-pressed="false" onclick="setInvTab('mine')" id="invTabMine">🕐 My Questions</button>
+  </div>
 
-      <div class="side-label">Discovery</div>
-      <button class="side-item disabled"><span class="ico">⌥</span>Org Chart</button>
-      <button class="side-item disabled"><span class="ico">▤</span>Group Knowledge</button>
-      <button class="side-item active"><span class="ico">⌕</span>Due Diligence<span class="cnt" id="sideCnt">0</span></button>
-      <button class="side-item disabled"><span class="ico">⇗</span>TRL Accelerator (Proj. 2)</button>
+  <!-- CHAT -->
+  <div id="invChatPane">
+    <div class="chat-window" id="chatWindow"></div>
+    <div class="chat-input">
+      <input id="chatInput" type="text" placeholder="Ask a question about the raise…" onkeydown="if(event.key==='Enter')sendChat()">
+      <button onclick="sendChat()">Send →</button>
     </div>
-    <div class="side-foot">
-      <button class="user">
-        <div class="avatar">SU</div>
-        <div>
-          <b>Scout Underwood</b>
-          <span>Admin</span>
-        </div>
-      </button>
+    <div class="chat-suggest">
+      <button onclick="sendChat('What is your current cash runway?')">What is your current cash runway?</button>
+      <button onclick="sendChat('What is your customer acquisition strategy?')">What is your customer acquisition strategy?</button>
+      <button onclick="sendChat('What is the liquidation preference on this round?')">What is the liquidation preference on this round?</button>
     </div>
   </div>
 
-  <div class="main">
-    <div class="topbar">
-      <div class="crumbs">PLANA Co. Brain / Discovery / <b>Due Diligence</b></div>
+  <!-- SEARCH -->
+  <div id="invSearchPane" hidden>
+    <div class="search-box">
+      <input id="searchInput" type="text" placeholder="Search the Q&A library…" oninput="renderSearch()">
     </div>
-    <div class="dd-page">
-      <div class="dd-head">
-        <div>
-          <h1>Due Diligence — Answer Engine</h1>
-          <p>Questions the investor chatbot couldn't answer land here. Publish an answer and it's pushed straight back to the investor portal.</p>
-        </div>
-        <button class="btn btn-primary" onclick="openAddQa()">+ Add Q&amp;A</button>
-      </div>
+    <div class="search-count" id="searchCount"></div>
+    <div id="searchResults"></div>
+  </div>
 
-      <div class="stat-row">
-        <div class="stat"><div class="n" id="statPending">0</div><div class="l">PENDING QUESTIONS</div></div>
-        <div class="stat"><div class="n" id="statPublished">0</div><div class="l">PUBLISHED THIS SESSION</div></div>
-        <div class="stat"><div class="n">~4 hrs</div><div class="l">AVG RESPONSE TIME</div></div>
-        <div class="stat"><div class="n" id="statLibrary">0</div><div class="l">TOTAL Q&amp;A LIBRARY</div></div>
-      </div>
+  <!-- FAQ -->
+  <div id="invFaqPane" hidden>
+    <div class="faq-cats" id="faqCats"></div>
+    <div id="faqList"></div>
+    <div class="faq-more">97 more answers live in the full library — this prototype shows a representative sample. Placeholder content shown throughout; swap in real Q&amp;A once supplied.</div>
+  </div>
 
-      <div class="seg dd-tabs" role="tablist">
-        <button aria-pressed="true" onclick="setDdTab('pending')" id="ddTabPending">Pending</button>
-        <button aria-pressed="false" onclick="setDdTab('library')" id="ddTabLibrary">Published Library</button>
-      </div>
-
-      <div id="pendingPane"></div>
-      <div id="libraryPane" hidden></div>
-    </div>
+  <!-- MY QUESTIONS -->
+  <div id="invMinePane" hidden>
+    <div id="mineList"></div>
   </div>
 </div>
 
-<!-- Email preview modal -->
+<!-- Email preview modal (escalation alert preview + answered notification) -->
 <div id="scrim" onclick="closeModals()"></div>
 <div id="emailOvl">
   <div class="mo-head">
@@ -515,46 +343,9 @@ a{color:inherit}
   <div class="mo-body" id="emailBody"></div>
 </div>
 
-<!-- Add Q&A modal (PLANA admin: add an answer directly, no investor escalation needed) -->
-<div id="addQaOvl">
-  <div class="mo-head">
-    <h5>Add a question &amp; answer</h5>
-    <button class="mo-close" onclick="closeModals()">✕</button>
-  </div>
-  <div class="mo-body">
-    <div class="aq-field">
-      <label>Question</label>
-      <input id="aqQuestion" type="text" placeholder="e.g. What is your policy on remote work?">
-    </div>
-    <div class="aq-field">
-      <label>Answer</label>
-      <textarea id="aqAnswer" placeholder="Type the verified answer…"></textarea>
-    </div>
-    <div class="aq-row2">
-      <div class="aq-field" style="flex:1">
-        <label>Category</label>
-        <select id="aqCategory"></select>
-      </div>
-      <div class="aq-field" style="flex:1">
-        <label>Answered by</label>
-        <select id="aqBy">
-          <option>Scout Underwood</option>
-          <option>Duc Nguyen</option>
-          <option>Braden Miller</option>
-        </select>
-      </div>
-    </div>
-    <div id="aqError" class="aq-error" hidden>Both a question and an answer are required.</div>
-    <div class="aq-actions">
-      <button class="btn" onclick="closeModals()">Cancel</button>
-      <button class="btn btn-primary" onclick="submitAddQa()">Publish to Wiki →</button>
-    </div>
-  </div>
-</div>
-
 <script>
 /* ============================================================
-   Shared demo state
+   Local demo state — seed FAQ (~12 sample items; real library has ~100+)
    ============================================================ */
 const CATS = ["Data Room","Economic / Business Model","Budgets","Cap Table","Team & Org","Market"];
 
@@ -573,6 +364,35 @@ const SEED_FAQ = [
   {q:"What is the use of proceeds for this round?", a:"Proceeds are allocated approximately 50% engineering/product, 30% sales & marketing, 15% operations, and 5% reserve. [Placeholder figures]", cat:"Budgets", by:"Braden Miller", updated:"Aug 2026"},
 ];
 
+/* ============================================================
+   CROSS-FILE HANDOFF CONTRACT (read this before wiring up a backend)
+   ------------------------------------------------------------
+   OUTBOUND (this file → dd-admin.html):
+     When a question can't be matched locally, "View the alert email"
+     shows a real link to:  dd-admin.html?newq=<question>&qid=<id>&cat=<category>&askedBy=<name>
+     dd-admin.html reads those params on load and creates a pending card.
+
+   INBOUND (dd-admin.html → this file):
+     When PLANA publishes an answer, the notification email's CTA points to:
+       index.html?answered=1&qid=<id>&q=<question>&a=<answer>&cat=<category>&by=<answerer>
+     This file reads those params on load, inserts the Q&A, and opens it.
+
+   PRODUCTION NOTE FOR YOUR DEVELOPER:
+     Passing question/answer text through the URL is fine for a static
+     click-through prototype but is not how this should ship. Replace with:
+       1. SEED_FAQ → GET /api/dd-answers (your real Q&A store)
+       2. escalate → POST /api/dd-questions {question, askedBy} → triggers
+          the internal email to Duc/Braden with a deep link containing a
+          real question ID (not raw text)
+       3. publish (dd-admin.html) → POST /api/dd-answers/:id → triggers the
+          investor notification email via your ESP, and the deep link back
+          here should carry only the ID; this page fetches the answer by ID
+          rather than trusting values from the URL.
+     Both pages already isolate all data access behind small functions
+     (loadFaq/escalate/etc. — see below) so swapping fetch() calls in is a
+     contained change.
+   ============================================================ */
+
 function seedFaqWithIds(){
   return JSON.parse(JSON.stringify(SEED_FAQ)).map((item,idx)=>({ ...item, id:`seed-${idx+1}` }));
 }
@@ -580,33 +400,21 @@ function seedFaqWithIds(){
 let state = {
   faq: seedFaqWithIds(),
   pending: [],
-  publishedCount: 0,
-  chatLog: [],
-  seq: 1,
   myQuestions: [],   // questions this investor personally asked: {id, q, status:'pending'|'answered', faqId}
-  unread: []         // faqIds answered but not yet opened by the investor — drives the notification bell
+  unread: [],        // faqIds answered but not yet opened by the investor — drives the notification bell
+  seq: 1000
 };
 
-function resetDemo(){
-  state = { faq: seedFaqWithIds(), pending: [], publishedCount: 0, chatLog: [], seq: 1, myQuestions: [], unread: [] };
-  document.getElementById('chatInput').value='';
+function init(){
   document.getElementById('chatWindow').innerHTML='';
   addAiBubble("Hi Philippe — ask me anything about the raise. I search the data room, economic model, and budgets before answering, and I always cite the source.", null);
-  renderFaq(); renderSearch(); renderPending(); renderLibrary(); updateStats(); renderMyQuestions(); renderBell();
+  renderFaq(); renderSearch(); renderMyQuestions(); renderBell();
+  handleIncomingAnswer();
 }
 
 /* ============================================================
-   View switching (prototype chrome)
+   Tabs
    ============================================================ */
-function setView(v){
-  document.getElementById('investorView').hidden = v!=='investor';
-  document.getElementById('planaView').hidden = v!=='plana';
-  document.getElementById('btnViewInvestor').setAttribute('aria-pressed', v==='investor');
-  document.getElementById('btnViewPlana').setAttribute('aria-pressed', v==='plana');
-  document.getElementById('protoNote').textContent = v==='investor'
-    ? "Ask a question the library doesn't cover, then switch views to answer it as Duc/Braden and watch it come back."
-    : "Publish an answer below, then switch back to the Investor Portal — it's already there.";
-}
 function setInvTab(t){
   document.getElementById('invChatPane').hidden = t!=='chat';
   document.getElementById('invSearchPane').hidden = t!=='search';
@@ -617,15 +425,9 @@ function setInvTab(t){
   if(t==='faq') renderFaq();
   if(t==='mine') renderMyQuestions();
 }
-function setDdTab(t){
-  document.getElementById('pendingPane').hidden = t!=='pending';
-  document.getElementById('libraryPane').hidden = t!=='library';
-  document.getElementById('ddTabPending').setAttribute('aria-pressed', t==='pending');
-  document.getElementById('ddTabLibrary').setAttribute('aria-pressed', t==='library');
-}
 
 /* ============================================================
-   Chat + matching engine (simple keyword match against FAQ)
+   Chat + local matching engine (simple keyword match against FAQ)
    ============================================================ */
 function addAiBubble(html, srcItem){
   const w = document.getElementById('chatWindow');
@@ -678,12 +480,13 @@ function sendChat(preset){
     if(match){
       addAiBubble(match.a, match);
     } else {
-      addAiBubble(`I don't have a verified answer for that yet.
-        <div class="escalate-note"><span class="em-ico">✉</span><div><b>Duc Nguyen and Braden Miller have been notified</b> — I've emailed them your question with a direct link into PLANA. I'll also email <b>you</b> the moment it's answered, and you'll find it waiting in <button class="inline-link" onclick="setInvTab('mine')">My Questions</button> (average response time ~4 hours). <a href="#" onclick="openEscalationEmail('${escapeAttr(text)}');return false;" style="color:var(--brand-orange);text-decoration:underline">View the alert email they received →</a></div></div>`, null);
       const qid = state.seq++;
-      state.pending.push({ id: qid, q:text, askedBy:'Philippe Investor', cat: guessCat(text) });
+      const cat = guessCat(text);
+      addAiBubble(`I don't have a verified answer for that yet.
+        <div class="escalate-note"><span class="em-ico">✉</span><div><b>Duc Nguyen and Braden Miller have been notified</b> — I've emailed them your question with a direct link into PLANA. I'll also email <b>you</b> the moment it's answered, and you'll find it waiting in <button class="inline-link" onclick="setInvTab('mine')">My Questions</button> (average response time ~4 hours). <a href="#" onclick="openEscalationEmail('${escapeAttr(text)}', ${qid}, '${escapeAttr(cat)}');return false;" style="color:var(--brand-orange);text-decoration:underline">View the alert email they received →</a></div></div>`, null);
+      state.pending.push({ id: qid, q:text, cat });
       state.myQuestions.push({ id: qid, q:text, status:'pending', faqId:null });
-      renderPending(); updateStats(); renderMyQuestions();
+      renderMyQuestions();
     }
   }, 900 + Math.random()*500);
 }
@@ -696,7 +499,7 @@ function guessCat(text){
   if(/margin|revenue|mrr|arr|cac|ltv|pricing/.test(t)) return 'Economic / Business Model';
   return 'Data Room';
 }
-function escapeAttr(s){ return s.replace(/'/g,"\\'"); }
+function escapeAttr(s){ return String(s).replace(/'/g,"\\'"); }
 
 /* ============================================================
    Search pane
@@ -737,11 +540,9 @@ function setFaqCat(c){ activeCat=c; renderFaq(); }
 function toggleFaq(id){ document.getElementById('faqitem-'+id).classList.toggle('open'); }
 
 /* ============================================================
-   Notification bell + My Questions (investor side)
+   Notification bell + My Questions
    ============================================================ */
-function toggleBell(){
-  document.getElementById('bellDd').classList.toggle('show');
-}
+function toggleBell(){ document.getElementById('bellDd').classList.toggle('show'); }
 function renderBell(){
   const badge = document.getElementById('bellBadge');
   const n = state.unread.length;
@@ -777,7 +578,6 @@ function renderMyQuestions(){
 }
 function openAnswer(faqId){
   closeModals();
-  setView('investor');
   setInvTab('faq');
   activeCat = 'All';
   renderFaq();
@@ -799,83 +599,10 @@ document.addEventListener('click', (e)=>{
 });
 
 /* ============================================================
-   PLANA admin — pending + library
+   Email preview modals
    ============================================================ */
-function renderPending(){
-  const el = document.getElementById('pendingPane');
-  if(!state.pending.length){
-    el.innerHTML = `<div class="empty">No pending questions right now. Ask something new from the Investor Portal that isn't already in the library to see it land here.</div>`;
-    return;
-  }
-  el.innerHTML = state.pending.map(p=>`
-    <div class="card win-in" id="pq-${p.id}">
-      <div class="pq-top">
-        <h4>${p.q}</h4>
-        <div class="pq-actions"><button class="btn" onclick="openEscalationEmail('${escapeAttr(p.q)}')">✉ View alert email</button></div>
-      </div>
-      <div class="pq-meta">Asked by <b>${p.askedBy}</b> · flagged just now · suggested category: <b>${p.cat}</b></div>
-      <div class="pq-answer">
-        <textarea id="ans-${p.id}" placeholder="Type the answer Duc or Braden would give…"></textarea>
-        <div class="pq-row2">
-          <select id="cat-${p.id}">${CATS.map(c=>`<option ${c===p.cat?'selected':''}>${c}</option>`).join('')}</select>
-          <button class="btn btn-primary" onclick="publishAnswer(${p.id})">Publish to Wiki →</button>
-          <div class="pq-status" id="status-${p.id}"></div>
-        </div>
-      </div>
-    </div>`).join('');
-}
-function publishAnswer(id){
-  const idx = state.pending.findIndex(p=>p.id===id);
-  if(idx<0) return;
-  const p = state.pending[idx];
-  const ta = document.getElementById('ans-'+id);
-  const text = ta.value.trim();
-  if(!text){ ta.focus(); ta.style.borderColor='var(--brand-red)'; return; }
-  const cat = document.getElementById('cat-'+id).value;
-  const statusEl = document.getElementById('status-'+id);
-  statusEl.innerHTML = `<div class="spinner"></div> Wiki processing…`;
-  setTimeout(()=>{
-    statusEl.innerHTML = `✓ Published — Philippe notified`;
-    statusEl.classList.add('done');
-    const card = document.getElementById('pq-'+id);
-    card.classList.add('reviewed');
-    setTimeout(()=>{
-      const faqId = `f-${state.seq++}`;
-      state.faq.unshift({ id:faqId, q:p.q, a:text, cat:cat, by:'Braden Miller', updated:'Just now', isNew:true });
-      state.pending.splice(idx,1);
-      state.publishedCount++;
-      const mine = state.myQuestions.find(m=>m.id===id);
-      if(mine){ mine.status='answered'; mine.faqId=faqId; state.unread.push(faqId); }
-      renderPending(); renderLibrary(); renderFaq(); renderSearch(); updateStats(); renderMyQuestions(); renderBell();
-      const shortQ = p.q.slice(0,40)+(p.q.length>40?'…':'');
-      const emailLink = mine ? ` <button class="toast-link" onclick="openNotifyEmail('${escapeAttr(p.q)}','${faqId}')">Preview the notification email →</button>` : '';
-      showToast(`✓ Braden published an answer to "${shortQ}" · Philippe notified by email${emailLink}`, emailLink ? 6500 : 3800);
-    }, 900);
-  }, 1200);
-}
-function renderLibrary(){
-  const el = document.getElementById('libraryPane');
-  el.innerHTML = state.faq.map(i=>`
-    <div class="lib-item">
-      <div class="li-body">
-        <h4>${i.q} ${i.isNew?'<span class="chip new">NEW</span>':''}</h4>
-        <p>${i.a}</p>
-        <div class="lib-meta"><span class="chip outline">${i.cat}</span><span class="chip dashed">By ${i.by} · ${i.updated}</span></div>
-      </div>
-    </div>`).join('');
-}
-function updateStats(){
-  document.getElementById('statPending').textContent = state.pending.length;
-  document.getElementById('statPublished').textContent = state.publishedCount;
-  document.getElementById('statLibrary').textContent = (state.faq.length + 97) + '+';
-  document.getElementById('sideCnt').textContent = state.pending.length;
-  document.getElementById('sideCnt').style.display = state.pending.length ? 'inline-block' : 'none';
-}
-
-/* ============================================================
-   Email preview modal
-   ============================================================ */
-function openEscalationEmail(question){
+function openEscalationEmail(question, qid, cat){
+  const adminUrl = `dd-admin.html?newq=${encodeURIComponent(question)}&qid=${qid}&cat=${encodeURIComponent(cat)}&askedBy=${encodeURIComponent('Philippe Investor')}`;
   document.getElementById('emailSubject').textContent = 'New DD question needs an answer';
   document.getElementById('emailBody').innerHTML = `
     <div class="email-meta">
@@ -888,71 +615,14 @@ function openEscalationEmail(question){
       <p>An investor asked a question our data room, economic model, and budgets don't currently answer:</p>
       <p style="border-left:2px solid var(--brand-orange);padding-left:12px;color:var(--muted)">"${question}"</p>
       <p>Please add a verified answer so it's ready next time it's asked — and so Philippe gets notified automatically.</p>
-      <button class="btn btn-primary email-cta" onclick="closeModals();setView('plana');setDdTab('pending')">Open in PLANA →</button>
+      <a class="btn btn-primary email-cta" href="${adminUrl}" target="_blank">Open in PLANA →</a>
     </div>`;
   document.getElementById('scrim').classList.add('show');
   document.getElementById('emailOvl').classList.add('show');
 }
-function openNotifyEmail(question, faqId){
-  document.getElementById('emailSubject').textContent = 'Your question has been answered';
-  document.getElementById('emailBody').innerHTML = `
-    <div class="email-meta">
-      <div><b>From:</b> PLANA Due Diligence Bot &lt;dd-bot@plans.aero&gt;</div>
-      <div><b>To:</b> Philippe Investor</div>
-      <div><b>Subject:</b> Your question has been answered</div>
-    </div>
-    <div class="email-light">
-      <div class="el-head">
-        <div class="el-logo">✳ PLANA</div>
-      </div>
-      <div class="el-body">
-        <p class="el-eyebrow">DUE DILIGENCE — PLANS.AERO</p>
-        <h3>Your question has been answered</h3>
-        <p>Hi Philippe, the team just posted a verified answer to the question you asked:</p>
-        <div class="el-quote">"${question}"</div>
-        <a class="el-cta" href="#" onclick="openAnswer('${faqId}');return false;">View my answer →</a>
-        <p class="el-foot">This link takes you straight back to your question in the data room — no need to search for it. You can also find every question you've asked under <b>My Questions</b> in the portal.</p>
-      </div>
-    </div>`;
-  document.getElementById('scrim').classList.add('show');
-  document.getElementById('emailOvl').classList.add('show');
-}
-
-/* ============================================================
-   Add Q&A modal — let an admin add a question+answer directly,
-   no investor escalation needed
-   ============================================================ */
-function openAddQa(){
-  document.getElementById('aqQuestion').value = '';
-  document.getElementById('aqAnswer').value = '';
-  document.getElementById('aqError').hidden = true;
-  const catSel = document.getElementById('aqCategory');
-  catSel.innerHTML = CATS.map(c=>`<option>${c}</option>`).join('');
-  document.getElementById('scrim').classList.add('show');
-  document.getElementById('addQaOvl').classList.add('show');
-  setTimeout(()=>document.getElementById('aqQuestion').focus(), 50);
-}
-function submitAddQa(){
-  const q = document.getElementById('aqQuestion').value.trim();
-  const a = document.getElementById('aqAnswer').value.trim();
-  const cat = document.getElementById('aqCategory').value;
-  const by = document.getElementById('aqBy').value;
-  if(!q || !a){
-    document.getElementById('aqError').hidden = false;
-    return;
-  }
-  state.faq.unshift({ q, a, cat, by, updated:'Just now', isNew:true });
-  state.publishedCount++;
-  closeModals();
-  renderLibrary(); renderFaq(); renderSearch(); updateStats();
-  setDdTab('library');
-  showToast(`✓ ${by} added a new Q&A directly · now live in the investor portal`);
-}
-
 function closeModals(){
   document.getElementById('scrim').classList.remove('show');
   document.getElementById('emailOvl').classList.remove('show');
-  document.getElementById('addQaOvl').classList.remove('show');
 }
 function showToast(msg, ms){
   const t = document.createElement('div');
@@ -962,8 +632,38 @@ function showToast(msg, ms){
   setTimeout(()=>t.remove(), ms||3800);
 }
 
-/* init */
-resetDemo();
+/* ============================================================
+   Inbound handoff — arriving here from a dd-admin.html notification
+   email link: index.html?answered=1&qid=&q=&a=&cat=&by=
+   ============================================================ */
+function handleIncomingAnswer(){
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('answered') !== '1') return;
+  const qid = params.get('qid');
+  const q = params.get('q');
+  const a = params.get('a');
+  const cat = params.get('cat') || 'Data Room';
+  const by = params.get('by') || 'Braden Miller';
+  if(!q || !a) return;
+
+  const faqId = `f-${qid || state.seq++}`;
+  if(!state.faq.find(f=>f.id===faqId)){
+    state.faq.unshift({ id:faqId, q, a, cat, by, updated:'Just now', isNew:true });
+  }
+  let mine = state.myQuestions.find(m=>String(m.id)===String(qid));
+  if(!mine){ mine = { id:qid, q, status:'answered', faqId }; state.myQuestions.push(mine); }
+  else { mine.status='answered'; mine.faqId=faqId; }
+  state.unread.push(faqId);
+  renderMyQuestions(); renderBell();
+
+  // clean the URL so a refresh doesn't re-trigger this
+  history.replaceState(null, '', window.location.pathname);
+
+  showToast(`✓ Your question was answered — opening it now…`);
+  setTimeout(()=>openAnswer(faqId), 700);
+}
+
+init();
 </script>
 </body>
 </html>
