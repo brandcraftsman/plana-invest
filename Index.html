@@ -93,7 +93,8 @@ a{color:inherit}
   background:linear-gradient(180deg,#1e1e21,#141416);border:1px solid var(--brand-orange);
   border-radius:10px;padding:11px 18px;font-size:13px;display:flex;align-items:center;gap:8px;
   box-shadow:0 12px 40px rgba(0,0,0,.5);animation:toastIn .25s ease both}
-.toast .tdot{width:7px;height:7px;border-radius:50%;background:var(--brand-orange)}
+.toast .tdot{width:7px;height:7px;border-radius:50%;background:var(--brand-orange);flex-shrink:0}
+.toast-link{color:var(--brand-orange);text-decoration:underline;font:inherit;white-space:nowrap;padding:0}
 ::-webkit-scrollbar{width:9px;height:9px}
 ::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:5px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -116,6 +117,22 @@ a{color:inherit}
 .email-body{font-size:13.5px;color:var(--text);line-height:1.7}
 .email-body p{margin-bottom:12px}
 .email-cta{display:inline-block;margin-top:6px}
+
+/* light-mode transactional email — the investor-facing "answered" notification.
+   Deliberately light (not the dark app theme): renders reliably across every
+   email client and matches conventional inbox expectations. */
+.email-light{background:#f4f4f5;border-radius:10px;overflow:hidden;font-family:"Google Sans","Google Sans Text",-apple-system,sans-serif}
+.el-head{background:#0f0f10;padding:16px 22px}
+.el-logo{color:#fff;font-weight:800;font-size:15px;letter-spacing:.02em}
+.el-body{background:#ffffff;padding:26px 24px 30px;color:#1a1a1c}
+.el-eyebrow{font-size:10.5px;letter-spacing:.1em;color:#e56203;font-weight:800;margin-bottom:8px}
+.el-body h3{font-size:19px;font-weight:800;color:#111;margin-bottom:12px}
+.el-body p{font-size:13.5px;color:#414042;line-height:1.65;margin-bottom:14px}
+.el-quote{border-left:3px solid #e56203;background:#f9f4ef;padding:10px 14px;font-size:13.5px;
+  color:#1a1a1c;font-style:italic;margin-bottom:18px;border-radius:0 6px 6px 0}
+.el-cta{display:inline-block;background:linear-gradient(120deg,#e50602,#e56203 140%);color:#fff;
+  font-weight:700;font-size:13.5px;padding:11px 22px;border-radius:8px;text-decoration:none;margin-bottom:18px}
+.el-foot{font-size:12px;color:#7c7b80;margin-bottom:0}
 
 /* Add Q&A modal */
 #addQaOvl{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(560px,94vw);
@@ -152,6 +169,42 @@ a{color:inherit}
 .inv-user b{font-size:12.5px;display:block}
 .inv-user span{font-size:11px;color:var(--muted)}
 .inv-lock{font-size:11px;color:var(--faint);display:flex;align-items:center;gap:5px;margin-left:2px}
+
+/* notification bell */
+.bell-wrap{position:relative}
+.bell-btn{width:34px;height:34px;border-radius:8px;font-size:16px;color:var(--muted);position:relative}
+.bell-btn:hover{background:var(--raised);color:var(--text)}
+.bell-badge{position:absolute;top:2px;right:2px;min-width:15px;height:15px;border-radius:99px;
+  background:linear-gradient(120deg,var(--brand-red),var(--brand-orange) 140%);color:#fff;
+  font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 3px;
+  border:1.5px solid var(--bg)}
+.bell-badge[hidden]{display:none}
+.bell-dd{position:absolute;top:42px;right:0;width:320px;z-index:60;display:none;
+  background:linear-gradient(180deg,#1e1e21 0%,var(--surface) 30%,#161618 100%);
+  border:1px solid var(--line-strong);border-radius:11px;box-shadow:0 20px 60px rgba(0,0,0,.55);overflow:hidden}
+.bell-dd.show{display:block}
+.bell-dd-head{padding:12px 14px;border-bottom:1px solid var(--line);font-size:12.5px;font-weight:700}
+.bell-dd-list{max-height:280px;overflow-y:auto}
+.bell-dd-item{width:100%;text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);display:block}
+.bell-dd-item:last-child{border-bottom:none}
+.bell-dd-item:hover{background:var(--raised)}
+.bell-dd-item .bq{font-size:12.5px;font-weight:600;line-height:1.4}
+.bell-dd-item .bm{font-size:11px;color:var(--brand-orange);margin-top:3px}
+.bell-dd-empty{padding:22px 14px;text-align:center;color:var(--faint);font-size:12px}
+
+/* My Questions tab */
+.mine-item{border-bottom:1px solid var(--line);padding:14px 2px;display:flex;gap:12px;align-items:flex-start}
+.mine-item:last-child{border-bottom:none}
+.mine-item .mi-body{flex:1}
+.mine-item h4{font-size:13.5px;font-weight:600;line-height:1.4}
+.mine-item .mi-meta{font-size:12px;color:var(--muted);margin-top:5px}
+.chip.status-pending{border:1px solid var(--line-strong);color:var(--muted)}
+.chip.status-answered{background:#1f3a28;color:#7bd88f;border:1px solid #2f5c3c}
+
+/* deep-link highlight on the FAQ item the investor is returned to */
+@keyframes flashHi{0%{box-shadow:0 0 0 0 rgba(229,98,3,.55);background:rgba(229,98,3,.14)}100%{box-shadow:0 0 0 0 rgba(229,98,3,0);background:transparent}}
+.faq-item.flash{animation:flashHi 1.8s ease-out 2}
+.inline-link{color:var(--brand-orange);text-decoration:underline;font:inherit;padding:0}
 
 .inv-wrap{max-width:920px;margin:0 auto;padding:26px 24px 70px}
 .inv-hero{margin-bottom:20px}
@@ -318,6 +371,13 @@ a{color:inherit}
     </div>
     <div class="inv-user">
       <span class="inv-lock">🔒 Password-protected</span>
+      <div class="bell-wrap">
+        <button class="bell-btn" onclick="toggleBell()" id="bellBtn">🔔<span class="bell-badge" id="bellBadge" hidden>0</span></button>
+        <div class="bell-dd" id="bellDd">
+          <div class="bell-dd-head">Answered since your last visit</div>
+          <div class="bell-dd-list" id="bellDdList"></div>
+        </div>
+      </div>
       <div class="inv-avatar">PH</div>
       <div>
         <b>Philippe</b>
@@ -336,6 +396,7 @@ a{color:inherit}
       <button aria-pressed="true" onclick="setInvTab('chat')" id="invTabChat">💬 Chat</button>
       <button aria-pressed="false" onclick="setInvTab('search')" id="invTabSearch">🔍 Search</button>
       <button aria-pressed="false" onclick="setInvTab('faq')" id="invTabFaq">📋 Browse FAQ</button>
+      <button aria-pressed="false" onclick="setInvTab('mine')" id="invTabMine">🕐 My Questions</button>
     </div>
 
     <!-- CHAT -->
@@ -366,6 +427,11 @@ a{color:inherit}
       <div class="faq-cats" id="faqCats"></div>
       <div id="faqList"></div>
       <div class="faq-more">97 more answers live in the full library — this prototype shows a representative sample. Placeholder content shown throughout; swap in real Q&amp;A once supplied.</div>
+    </div>
+
+    <!-- MY QUESTIONS -->
+    <div id="invMinePane" hidden>
+      <div id="mineList"></div>
     </div>
   </div>
 </div>
@@ -507,20 +573,26 @@ const SEED_FAQ = [
   {q:"What is the use of proceeds for this round?", a:"Proceeds are allocated approximately 50% engineering/product, 30% sales & marketing, 15% operations, and 5% reserve. [Placeholder figures]", cat:"Budgets", by:"Braden Miller", updated:"Aug 2026"},
 ];
 
+function seedFaqWithIds(){
+  return JSON.parse(JSON.stringify(SEED_FAQ)).map((item,idx)=>({ ...item, id:`seed-${idx+1}` }));
+}
+
 let state = {
-  faq: JSON.parse(JSON.stringify(SEED_FAQ)),
+  faq: seedFaqWithIds(),
   pending: [],
   publishedCount: 0,
   chatLog: [],
-  seq: 1
+  seq: 1,
+  myQuestions: [],   // questions this investor personally asked: {id, q, status:'pending'|'answered', faqId}
+  unread: []         // faqIds answered but not yet opened by the investor — drives the notification bell
 };
 
 function resetDemo(){
-  state = { faq: JSON.parse(JSON.stringify(SEED_FAQ)), pending: [], publishedCount: 0, chatLog: [], seq: 1 };
+  state = { faq: seedFaqWithIds(), pending: [], publishedCount: 0, chatLog: [], seq: 1, myQuestions: [], unread: [] };
   document.getElementById('chatInput').value='';
   document.getElementById('chatWindow').innerHTML='';
   addAiBubble("Hi Philippe — ask me anything about the raise. I search the data room, economic model, and budgets before answering, and I always cite the source.", null);
-  renderFaq(); renderSearch(); renderPending(); renderLibrary(); updateStats();
+  renderFaq(); renderSearch(); renderPending(); renderLibrary(); updateStats(); renderMyQuestions(); renderBell();
 }
 
 /* ============================================================
@@ -539,9 +611,11 @@ function setInvTab(t){
   document.getElementById('invChatPane').hidden = t!=='chat';
   document.getElementById('invSearchPane').hidden = t!=='search';
   document.getElementById('invFaqPane').hidden = t!=='faq';
-  ['Chat','Search','Faq'].forEach(k=>document.getElementById('invTab'+k).setAttribute('aria-pressed', k.toLowerCase()===t));
+  document.getElementById('invMinePane').hidden = t!=='mine';
+  ['Chat','Search','Faq','Mine'].forEach(k=>document.getElementById('invTab'+k).setAttribute('aria-pressed', k.toLowerCase()===t));
   if(t==='search') renderSearch();
   if(t==='faq') renderFaq();
+  if(t==='mine') renderMyQuestions();
 }
 function setDdTab(t){
   document.getElementById('pendingPane').hidden = t!=='pending';
@@ -605,10 +679,11 @@ function sendChat(preset){
       addAiBubble(match.a, match);
     } else {
       addAiBubble(`I don't have a verified answer for that yet.
-        <div class="escalate-note"><span class="em-ico">✉</span><div><b>Duc Nguyen and Braden Miller have been notified</b> — I've emailed them your question with a direct link into PLANA. You'll get an email the moment it's answered (average response time ~4 hours). <a href="#" onclick="openEscalationEmail('${escapeAttr(text)}');return false;" style="color:var(--brand-orange);text-decoration:underline">View the alert email they received →</a></div></div>`, null);
-      const item = { id: state.seq++, q:text, askedBy:'Philippe Investor', cat: guessCat(text) };
-      state.pending.push(item);
-      renderPending(); updateStats();
+        <div class="escalate-note"><span class="em-ico">✉</span><div><b>Duc Nguyen and Braden Miller have been notified</b> — I've emailed them your question with a direct link into PLANA. I'll also email <b>you</b> the moment it's answered, and you'll find it waiting in <button class="inline-link" onclick="setInvTab('mine')">My Questions</button> (average response time ~4 hours). <a href="#" onclick="openEscalationEmail('${escapeAttr(text)}');return false;" style="color:var(--brand-orange);text-decoration:underline">View the alert email they received →</a></div></div>`, null);
+      const qid = state.seq++;
+      state.pending.push({ id: qid, q:text, askedBy:'Philippe Investor', cat: guessCat(text) });
+      state.myQuestions.push({ id: qid, q:text, status:'pending', faqId:null });
+      renderPending(); updateStats(); renderMyQuestions();
     }
   }, 900 + Math.random()*500);
 }
@@ -650,16 +725,78 @@ function renderFaq(){
   catsEl.innerHTML = cats.map(c=>`<button class="faq-cat" aria-pressed="${c===activeCat}" onclick="setFaqCat('${c}')">${c}</button>`).join('');
   const list = activeCat==='All' ? state.faq : state.faq.filter(i=>i.cat===activeCat);
   const el = document.getElementById('faqList');
-  el.innerHTML = list.map((i,idx)=>`
-    <div class="faq-item ${i.isNew?'':''}" id="faqitem-${idx}">
-      <button class="faq-q" onclick="toggleFaq(${idx})"><span class="fq-caret">▸</span><h4>${i.q} ${i.isNew?'<span class=\"chip new\">NEW</span>':''}</h4></button>
+  el.innerHTML = list.map(i=>`
+    <div class="faq-item" id="faqitem-${i.id}">
+      <button class="faq-q" onclick="toggleFaq('${i.id}')"><span class="fq-caret">▸</span><h4>${i.q} ${i.isNew?'<span class=\"chip new\">NEW</span>':''}</h4></button>
       <div class="faq-a">${i.a}
         <div class="faq-meta"><span class="chip outline">${i.cat}</span><span class="chip dashed">By ${i.by} · ${i.updated}</span></div>
       </div>
     </div>`).join('');
 }
 function setFaqCat(c){ activeCat=c; renderFaq(); }
-function toggleFaq(idx){ document.getElementById('faqitem-'+idx).classList.toggle('open'); }
+function toggleFaq(id){ document.getElementById('faqitem-'+id).classList.toggle('open'); }
+
+/* ============================================================
+   Notification bell + My Questions (investor side)
+   ============================================================ */
+function toggleBell(){
+  document.getElementById('bellDd').classList.toggle('show');
+}
+function renderBell(){
+  const badge = document.getElementById('bellBadge');
+  const n = state.unread.length;
+  badge.hidden = n===0;
+  badge.textContent = n;
+  const list = document.getElementById('bellDdList');
+  if(!n){
+    list.innerHTML = `<div class="bell-dd-empty">Nothing new — you're all caught up.</div>`;
+    return;
+  }
+  list.innerHTML = state.unread.map(faqId=>{
+    const item = state.faq.find(f=>f.id===faqId);
+    if(!item) return '';
+    return `<button class="bell-dd-item" onclick="openAnswer('${faqId}')"><div class="bq">${item.q}</div><div class="bm">✓ Answered · view now →</div></button>`;
+  }).join('');
+}
+function renderMyQuestions(){
+  const el = document.getElementById('mineList');
+  if(!state.myQuestions.length){
+    el.innerHTML = `<div class="empty">You haven't asked anything yet that wasn't already in the library. Ask something new in Chat to see it tracked here.</div>`;
+    return;
+  }
+  el.innerHTML = state.myQuestions.slice().reverse().map(m=>`
+    <div class="mine-item">
+      <div class="mi-body">
+        <h4>${m.q}</h4>
+        <div class="mi-meta">${m.status==='answered' ? '✓ Answered — ready to view' : '⏳ Sent to Duc & Braden · avg response time ~4 hours'}</div>
+      </div>
+      ${m.status==='answered'
+        ? `<span class="chip status-answered">Answered</span><button class="btn" onclick="openAnswer('${m.faqId}')">View answer →</button>`
+        : `<span class="chip status-pending">Pending</span>`}
+    </div>`).join('');
+}
+function openAnswer(faqId){
+  closeModals();
+  setView('investor');
+  setInvTab('faq');
+  activeCat = 'All';
+  renderFaq();
+  state.unread = state.unread.filter(id=>id!==faqId);
+  renderBell();
+  document.getElementById('bellDd').classList.remove('show');
+  setTimeout(()=>{
+    const el = document.getElementById('faqitem-'+faqId);
+    if(!el) return;
+    el.classList.add('open');
+    el.scrollIntoView({behavior:'smooth', block:'center'});
+    el.classList.add('flash');
+    setTimeout(()=>el.classList.remove('flash'), 3700);
+  }, 60);
+}
+document.addEventListener('click', (e)=>{
+  const wrap = document.querySelector('.bell-wrap');
+  if(wrap && !wrap.contains(e.target)) document.getElementById('bellDd')?.classList.remove('show');
+});
 
 /* ============================================================
    PLANA admin — pending + library
@@ -703,11 +840,16 @@ function publishAnswer(id){
     const card = document.getElementById('pq-'+id);
     card.classList.add('reviewed');
     setTimeout(()=>{
-      state.faq.unshift({ q:p.q, a:text, cat:cat, by:'Braden Miller', updated:'Just now', isNew:true });
+      const faqId = `f-${state.seq++}`;
+      state.faq.unshift({ id:faqId, q:p.q, a:text, cat:cat, by:'Braden Miller', updated:'Just now', isNew:true });
       state.pending.splice(idx,1);
       state.publishedCount++;
-      renderPending(); renderLibrary(); renderFaq(); renderSearch(); updateStats();
-      showToast(`✓ Braden published an answer to "${p.q.slice(0,40)}${p.q.length>40?'…':''}" · Philippe notified by email`);
+      const mine = state.myQuestions.find(m=>m.id===id);
+      if(mine){ mine.status='answered'; mine.faqId=faqId; state.unread.push(faqId); }
+      renderPending(); renderLibrary(); renderFaq(); renderSearch(); updateStats(); renderMyQuestions(); renderBell();
+      const shortQ = p.q.slice(0,40)+(p.q.length>40?'…':'');
+      const emailLink = mine ? ` <button class="toast-link" onclick="openNotifyEmail('${escapeAttr(p.q)}','${faqId}')">Preview the notification email →</button>` : '';
+      showToast(`✓ Braden published an answer to "${shortQ}" · Philippe notified by email${emailLink}`, emailLink ? 6500 : 3800);
     }, 900);
   }, 1200);
 }
@@ -751,7 +893,7 @@ function openEscalationEmail(question){
   document.getElementById('scrim').classList.add('show');
   document.getElementById('emailOvl').classList.add('show');
 }
-function openNotifyEmail(){
+function openNotifyEmail(question, faqId){
   document.getElementById('emailSubject').textContent = 'Your question has been answered';
   document.getElementById('emailBody').innerHTML = `
     <div class="email-meta">
@@ -759,8 +901,19 @@ function openNotifyEmail(){
       <div><b>To:</b> Philippe Investor</div>
       <div><b>Subject:</b> Your question has been answered</div>
     </div>
-    <div class="email-body"><p>The team has posted a verified answer to your question — it's now live in the investor portal.</p>
-    <button class="btn btn-primary email-cta" onclick="closeModals();setView('investor');setInvTab('faq')">View in portal →</button></div>`;
+    <div class="email-light">
+      <div class="el-head">
+        <div class="el-logo">✳ PLANA</div>
+      </div>
+      <div class="el-body">
+        <p class="el-eyebrow">DUE DILIGENCE — PLANS.AERO</p>
+        <h3>Your question has been answered</h3>
+        <p>Hi Philippe, the team just posted a verified answer to the question you asked:</p>
+        <div class="el-quote">"${question}"</div>
+        <a class="el-cta" href="#" onclick="openAnswer('${faqId}');return false;">View my answer →</a>
+        <p class="el-foot">This link takes you straight back to your question in the data room — no need to search for it. You can also find every question you've asked under <b>My Questions</b> in the portal.</p>
+      </div>
+    </div>`;
   document.getElementById('scrim').classList.add('show');
   document.getElementById('emailOvl').classList.add('show');
 }
@@ -801,12 +954,12 @@ function closeModals(){
   document.getElementById('emailOvl').classList.remove('show');
   document.getElementById('addQaOvl').classList.remove('show');
 }
-function showToast(msg){
+function showToast(msg, ms){
   const t = document.createElement('div');
   t.className='toast';
   t.innerHTML = `<span class="tdot"></span>${msg}`;
   document.body.appendChild(t);
-  setTimeout(()=>t.remove(), 3800);
+  setTimeout(()=>t.remove(), ms||3800);
 }
 
 /* init */
